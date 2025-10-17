@@ -40,7 +40,7 @@ public class GameTimer : MonoBehaviour
             // Convertir a minutos y segundos
             int minutos = Mathf.FloorToInt(tiempoRestante / 60f);
             int segundos = Mathf.FloorToInt(tiempoRestante % 60f);
-            
+
             textoTiempo.text = string.Format("Tiempo: {0:00}:{1:00}", minutos, segundos);
 
             // Cambiar color a rojo si quedan menos de 10 segundos
@@ -54,12 +54,12 @@ public class GameTimer : MonoBehaviour
     void GameOver()
     {
         Debug.Log("¡TIEMPO TERMINADO! - GAME OVER");
-        
+
         // Aquí puedes:
         // - Desactivar al jugador
         // - Mostrar un mensaje
         // - Cambiar a escena de Game Over
-        
+
         // Desactivar el movimiento del jugador
         JugadorController jugador = FindObjectOfType<JugadorController>();
         if (jugador != null)
