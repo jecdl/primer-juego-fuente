@@ -48,14 +48,23 @@ public class JugadorController : MonoBehaviour
     private Rigidbody rb;
     public float velocidad = 10f;
     private int contador;
+    private int contadorAnillos;
 
-    // Variables para los textos (compatible con Text y TextMeshPro)
-    public TextMeshProUGUI textoContador, textoGanar;
+    // Variables para los textos
+    public TextMeshProUGUI textoContador, textoGanar, textoNombreMatricula;
+
+    // Variables para audio
+    public AudioSource audioSourceFX;  // Para efectos de sonido
+    public AudioSource audioSourceMusica;  // Para música de ambiente
+    public AudioClip sonidoCubo;
+    public AudioClip sonidoAnillo;
+    public AudioClip musicaAmbiente;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         contador = 0;
+        contadorAnillos = 0;
         Debug.Log("Contador iniciado: " + contador);
 
         // Actualizo el texto del contador por primera vez
@@ -64,6 +73,18 @@ public class JugadorController : MonoBehaviour
         // Inicio el texto de ganar a vacío
         if (textoGanar != null)
             textoGanar.text = "";
+
+        // Agregamos nombre y matrícula en esquina superior derecha
+        if (textoNombreMatricula != null)
+            textoNombreMatricula.text = "Josuan\nMatrícula: 1-20-1752";
+
+        // Reproducir música de ambiente al iniciar
+        if (audioSourceMusica != null && musicaAmbiente != null)
+        {
+            audioSourceMusica.clip = musicaAmbiente;
+            audioSourceMusica.loop = true;  // Que se repita
+            audioSourceMusica.Play();
+        }
     }
 
     void FixedUpdate()
@@ -87,14 +108,38 @@ public class JugadorController : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Coleccionable"))
+        // Coleccionables tipo CUBO (tag: "Cubo")
+        if (other.gameObject.CompareTag("Cubo"))
         {
-            Debug.Log("¡Coleccionable recogido!");
+            Debug.Log("¡Cubo recogido!");
             other.gameObject.SetActive(false);
             contador = contador + 1;
-            Debug.Log("Total de coleccionables recogidos: " + contador);
 
-            // Actualizo el texto del contador
+            // Reproducir sonido de cubo (FX)
+            if (audioSourceFX != null && sonidoCubo != null)
+                audioSourceFX.PlayOneShot(sonidoCubo);
+
+            setTextoContador();
+        }
+
+        // Coleccionables tipo ANILLO (tag: "Anillo")
+        if (other.gameObject.CompareTag("Anillo"))
+        {
+            Debug.Log("¡Anillo recogido!");
+            other.gameObject.SetActive(false);
+            contadorAnillos = contadorAnillos + 1;
+
+            // Reproducir sonido de anillo
+            if (audioSourceFX != null && sonidoAnillo != null)
+                audioSourceFX.PlayOneShot(sonidoAnillo);
+
+            // PAUSAR la música de fondo cuando recojas anillo
+            if (audioSourceMusica != null && audioSourceMusica.isPlaying)
+            {
+                audioSourceMusica.Pause();
+                Debug.Log("¡Música pausada!");
+            }
+
             setTextoContador();
         }
     }
@@ -103,12 +148,14 @@ public class JugadorController : MonoBehaviour
     void setTextoContador()
     {
         if (textoContador != null)
-            textoContador.text = "Contador: " + contador.ToString();
+            textoContador.text = "Cubos: " + contador.ToString() + " | Anillos: " + contadorAnillos.ToString();
 
-        if (contador >= 12)
+        // Ganar si recoges 12 objetos TOTALES (cubos + anillos)
+        int totalObjetos = contador + contadorAnillos;
+        if (totalObjetos >= 12)
         {
             if (textoGanar != null)
-                textoGanar.text = "¡Ganaste!";
+                textoGanar.text = "¡GANASTE!";
         }
     }
 
@@ -116,6 +163,11 @@ public class JugadorController : MonoBehaviour
     public int ObtenerContador()
     {
         return contador;
+    }
+
+    public int ObtenerContadorAnillos()
+    {
+        return contadorAnillos;
     }
 
     /* CÓDIGO VIEJO - USANDO Input.GetAxis
